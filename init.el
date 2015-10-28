@@ -9,7 +9,7 @@
 ;; General Configuration
 
 ;; customize window title
-(setq frame-title-format "Fallas")
+(setq frame-title-format "You're Such a NERD")
 ;; highlights parenthesis
 (global-hl-line-mode)
 ;; easier navigating through windows
@@ -55,8 +55,8 @@
  (defun toggle-transparency ()
    (interactive)
    (if (/=
-        (cadr (frame-parameter nil 'alpha))
-        100)
+	(cadr (frame-parameter nil 'alpha))
+	100)
        (set-frame-parameter nil 'alpha '(100 100))
      (set-frame-parameter nil 'alpha '(85 50))))
  (global-set-key (kbd "C-c t") 'toggle-transparency)
@@ -326,36 +326,64 @@
 
 (tempo-define-template "c++-class"
 			'("/**" > n>
-			  "*" (s class) "."> n>
+			  "* Filename: "  n>
+			  "* Author: Benito Sanchez " n>
+			  "* Date: " n>
+			  "* Description: " n>
+			  > n>
 			  "*/" > n>
 			  "class " (p "classname: " class) " {" > n>
 
 
 
+
 			  "public:" > n>
-			  (s class) "(); \t//the default constructor" n>
+			  > n>
+			  "// ****************************************************************" n>
+			  (s class) "(); " n>
+			  "// ****************************************************************" n>
+			  "// SUMMARY: " n>
+			  "// " n>
+			  "// PRECONDITION: " n>
+			  "// " n>
+			  "// POSTCONDITION: " n>
+			  "// " n>
+			  "// ****************************************************************" n>
+			  > n>
+
+			  "// ****************************************************************" n>
 			  (s class) "(const " (s class) " &c);" n>
+			  "// ****************************************************************" n>
+			  "// SUMMARY: " n>
+			  "// " n>
+			  "// PRECONDITION: " n>
+			  "// " n>
+			  "// POSTCONDITION: " n>
+			  "// " n>
+			  "// ****************************************************************" n>
+			  > n>
+
+			  "// ****************************************************************" n>
 			  "~" (s class) "() {}" > n>
+			  "// ****************************************************************" n>
+			  "// SUMMARY: " n>
+			  "// " n>
+			  "// PRECONDITION: " n>
+			  "// " n>
+			  "// POSTCONDITION: " n>
+			  "// " n>
+			  "// ****************************************************************" n>
+			  > n>
 			  > n>
 
 			  "/* Accessors */" > n>
-			  (s type) " get" (s fnBase) "() const { return "(s m_var) "; }" > n>
-			  > n>
+
 
 			  "/* Mutators */" > n>
-			  "void set" (s fnBase) "(" (s type) " " (s var) ") { " (s m_var) " = " (s var) "; }" > n>
-			  > n>
+
 
 			  "private:" > n>
 
-			  (p "variable member type: " type 'noinsert)
-			  (p "variable member name: " var  'noinsert)
-			  (tempo-save-named 'm_var (concat "_" (tempo-lookup-named 'var)))
-			  (s type) " " (s m_var) ";" > n>
-			  > ~ n>
-
-			  "friend std::ostream& operator<<(std::ostream& os, const " (s class) " & f);" > n>
-			  > n>
 
 			 "};\t// end of class " (s class) > n>
 			 )
