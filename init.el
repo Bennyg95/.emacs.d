@@ -1,15 +1,18 @@
 (require 'package)
 (package-initialize)
+
 (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
 ;;(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
 (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
 (package-initialize)
 
+(add-to-list 'load-path "~/.emacs.d/markdown-mode/")
+
 
 ;; General Configuration
 
 ;; customize window title
-(setq frame-title-format "You're Such a NERD")
+(setq frame-title-format "GRIT")
 ;; highlights parenthesis
 (global-hl-line-mode)
 ;; easier navigating through windows
@@ -28,7 +31,7 @@
 ;; Show column number
 (column-number-mode t)
 ;; No backups
-(setq backup-inhibitied -1)
+(setq make-backup-files nil)
 ;; Mouse scroll one line at a time
 (setq mouse-wheel-follow-mouse 't)
 ;; Keyboard scroll one line at a time
@@ -41,6 +44,8 @@
 (add-hook 'before-save-hook 'whitespace-cleanup)
 ;; Tabs for makefiles
 (add-hook 'makefile-mode 'indent-tabs-mode)
+(windmove-default-keybindings)
+(setq windmove-wrap-around t)
 ;; Stop curso from jumping into minibuffer by itself
 (setq minibuffer-prompt-properties
       (quote (read-only t point-entered minibuffer-avoid-prompt
@@ -48,8 +53,8 @@
 
 ;; Transparent emacs
  ;;(set-frame-parameter (selected-frame) 'alpha '(<active> [<inactive>]))
- (set-frame-parameter (selected-frame) 'alpha '(85 50))
- (add-to-list 'default-frame-alist '(alpha 85 50))
+ (set-frame-parameter (selected-frame) 'alpha '(85 85))
+ (add-to-list 'default-frame-alist '(alpha 85 85))
 
  (eval-when-compile (require 'cl))
  (defun toggle-transparency ()
@@ -71,84 +76,6 @@
 ;;; should be loaded before auto complete so that they can work together
 (require 'yasnippet)
 (yas-global-mode 1)
-
-;;; auto complete mod
-;;; should be loaded after yasnippet so that they can work together
-(require 'auto-complete-config)
-(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
-(ac-config-default)
-;;; set the trigger key so that it can work together with yasnippet on tab key,
-;;; if the word exists in yasnippet, pressing tab will cause yasnippet to
-;;; activate, otherwise, auto-complete will
-(ac-set-trigger-key "TAB")
-(ac-set-trigger-key "<tab>")
-
-;;; tempo-c-cpp.el --- abbrevs for c/c++ programming
-;;
-;; Copyright (C) 2008  Sebastien Varrette
-;;
-;; Author: Sebastien Varrette <Sebastien.Varrette@uni.lu>
-;; Maintainer: Sebastien Varrette <Sebastien.Varrette@uni.lu>
-;; Created: 18 Jan 2008
-;; Version: 0.1
-;; Keywords: template, C, C++
-
-;; This file is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2, or (at your option)
-;; any later version.
-
-;; This file is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-
-;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-;; Boston, MA 02110-1301, USA.
-
-;;; Commentary
-;;
-;; This is a way to hook tempo into cc-mode. In fact, I merge here many ressources, including:
-;; - http://www.lysator.liu.se/~davidk/elisp/tempo-examples.html
-;; - http://svn.marc.abramowitz.info/homedir/dotfiles/emacs
-;; - http://www.emacswiki.org/cgi-bin/wiki/TempoMode
-;; etc...
-;;
-;; To use this file, just put a (require 'tempo-c-cpp) in your .emacs file
-;;
-;; Note on tempo (from EmacsWiki):
-;; templates are defined through tempo-define-template. they uses (p ...) to prompt for variables
-;; and (s ...) to insert them again. > indents, n inserts a newline, and r inserts the region, if active.
-;;
-;; To use the templates defined here:
-;; - either run M-x tempo-template-c-<xx> where <xx> is the name of the template (use TAB to have the list)
-;; - or start to type the corresponding abbreviation (list follows) and hit C-RET or F5
-;;
-;; Feel free to adapt the templates to your own programming style.
-;;
-;; List of abbreviations:
-;;	<abbrev>		<correspondant sequence>
-;; ---- Preprocessor statements ---
-;;	include			#include
-;;	define			#define
-;;	ifdef			#ifdef
-;;	ifndef			#ifndef
-;; --- C statements
-;;	if			if (...) { }
-;;	else			else { ... }
-;;	ifelse			if (...) { } else { }
-;;	while			while (...) { }
-;;	for			for (...) { }
-;;	fori			for (i=0; i < limit; i++) { }
-;;	switch			switch() {...}
-;;	case			case: ... break;
-;;	main			int main() { ... }
-;;	malloc			type * var = (type *) malloc(...)
-;; --- C++ statements
-;;    class			class xxx { ... };
-;;    getset			accessor/mutator
 
 (require 'tempo)
 (setq tempo-interactive t)
@@ -217,85 +144,44 @@
 
 (tempo-define-template "c-ifndef"
 		       '("#ifndef " (p "ifndef-clause: " clause) > n
-			 "#define " (s clause) n> p n
+			 "#define " (s clause) n>
+
+			 "/** " > n>
+			 "* " > n>
+			 "* Filename: " n>
+			 "* " > n>
+			 "* Classname: " n>
+			 "* " > n>
+			 "* Description: " n>
+			 "* " > n>
+			 "* " > n>
+			 "**/" > n>
+			 " " > n> p n
 			 "#endif // " (s clause) n>
 			 )
 		       "ifndef"
 		       "Insert a #ifndef #define #endif statement"
 		       'c-tempo-tags)
 
-;;; C-Mode Templates
-(tempo-define-template "c-if"
-		       '(> "if (" ~ " ) { "  n>
-			 > n
-			 "}" > n>
-			 )
-		       "if"
-		       "Insert a C if statement"
-		       'c-tempo-tags)
-
-(tempo-define-template "c-else"
-		       '(> "else {" n>
-			 > ~ n
-			 "}" > n>
-			 )
-		       "else"
-		       "Insert a C else statement"
-		       'c-tempo-tags)
-
-(tempo-define-template "c-if-else"
-		       '(> "if (" ~ " ) { "  n>
-			 > n
-			 "} else {" > n>
-			 > n
-			 "}" > n>
-			 )
-		       "ifelse"
-		       "Insert a C if else statement"
-		       'c-tempo-tags)
-
-(tempo-define-template "c-while"
-		       '(> "while (" ~ " ) { "  n>
-			 > n
-			 "}" > n>
-			 )
-		       "while"
-		       "Insert a C while statement"
-		       'c-tempo-tags)
-
-(tempo-define-template "c-for"
-		       '(> "for (" ~ " ) { "  n>
-			 > n
-			 "}" > n>
-			 )
-		       "for"
-		       "Insert a C for statement"
-		       'c-tempo-tags)
-
-(tempo-define-template "c-for-i"
-		       '(> "for (" (p "variable: " var) " = 0; " (s var)
-			 " < "(p "upper bound: " ub)"; " (s var) "++) {" >  n>
-			 > r n
-			 "}" > n>
-			 )
-		       "fori"
-		       "Insert a C for loop: for(x = 0; x < ..; x++)"
-		       'c-tempo-tags)
-
-(tempo-define-template "c-malloc"
-		       '(>(p "type: " type) " * " (p "variable name: " var) " = (" (s type) " *) malloc(sizeof(" (s type) "));" n>
-			  "if (" (s var) " == NULL) {" n>
-			  > r n
-			 "}" > n>
-			 )
-		       "malloc"
-		       "Insert a C malloc statement to define and allocate a pointer"
-		       'c-tempo-tags)
-
 (tempo-define-template "c-main"
-		       '(> "int main(int argc, char *argv[]) {" >  n>
+		       '(> "/** " > n>
+			   "* Filename: " > n>
+			   "* " n>
+			   "* Author: Benito Sanchez" > n>
+			   "* " > n>
+			   "* Description " > n>
+			   "* " > n>
+			   "* Date: " > n>
+			   "* " > n>
+			   "**/" > n>
+			   > n>
+			 "#include <iostream>" > n>
+			 "#include <cstdlib>" > n>
+			   "using namespace std;" > n>
+			   > n>
+			 "int main() {" >  n>
 			 > r n
-			 "return 0;" > n
+			 "return EXIT_SUCCESS;" > n
 			 "}" > n>
 			 )
 		       "main"
@@ -325,13 +211,7 @@
 (setq max-lisp-eval-depth 500)
 
 (tempo-define-template "c++-class"
-			'("/**" > n>
-			  "* Filename: "  n>
-			  "* Author: Benito Sanchez " n>
-			  "* Date: " n>
-			  "* Description: " n>
-			  > n>
-			  "*/" > n>
+			'(
 			  "class " (p "classname: " class) " {" > n>
 
 
@@ -351,36 +231,15 @@
 			  "// ****************************************************************" n>
 			  > n>
 
-			  "// ****************************************************************" n>
-			  (s class) "(const " (s class) " &c);" n>
-			  "// ****************************************************************" n>
-			  "// SUMMARY: " n>
-			  "// " n>
-			  "// PRECONDITION: " n>
-			  "// " n>
-			  "// POSTCONDITION: " n>
-			  "// " n>
-			  "// ****************************************************************" n>
-			  > n>
-
-			  "// ****************************************************************" n>
-			  "~" (s class) "() {}" > n>
-			  "// ****************************************************************" n>
-			  "// SUMMARY: " n>
-			  "// " n>
-			  "// PRECONDITION: " n>
-			  "// " n>
-			  "// POSTCONDITION: " n>
-			  "// " n>
-			  "// ****************************************************************" n>
-			  > n>
-			  > n>
-
 			  "/* Accessors */" > n>
-
+			  > n>
 
 			  "/* Mutators */" > n>
+			  > n>
+			  "// ****************************************************************" n>
 
+			  > n>
+			  > n>
 
 			  "private:" > n>
 
@@ -391,19 +250,13 @@
 		       "Insert a class skeleton"
 		       'c++-tempo-tags)
 
-(tempo-define-template "c++-getset"
-		       '((p "type: "     type 'noinsert)
-			 (p "variable: " var  'noinsert)
-			 (tempo-save-named 'virtual (if (y-or-n-p  "virtual?") "virtual " ""))
-			 (tempo-save-named 'm_var (concat "_" (tempo-lookup-named 'var)))
-			 (tempo-save-named 'fnBase (upcase-initials (tempo-lookup-named 'var)))
-			 (s type) " " (s m_var) ";" > n>
-			 (s virtual) (s type) " get" (s fnBase) "() const { return "(s m_var) "; }" > n>
-			 (s virtual) "void set" (s fnBase) "(" (s type) " " (s var) ") { " (s m_var) " = " (s var) "; }" > n>
-			 )
-		       "getset"
-		       "Insert get set methods"
-		       'c++-tempo-tags)
+
+(autoload 'markdown-mode "markdown-mode.el"
+   "Major mode for editing Markdown files" t)
+(add-to-list 'auto-mode-alist '("\\.text\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+
 
 (provide 'tempo-c-cpp)
 ;;; tempo-c-cpp.el ends here
