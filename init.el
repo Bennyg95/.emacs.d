@@ -6,13 +6,14 @@
 (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
 (package-initialize)
 
-(add-to-list 'load-path "~/.emacs.d/markdown-mode/")
-
 
 ;; General Configuration
 
 ;; customize window title
 (setq frame-title-format "GRIT")
+(global-auto-complete-mode t)
+(add-to-list 'ac-modes 'sql-mode 'c++-mode)
+(setq ac-modes '(c++-mode sql-mode))
 ;; highlights parenthesis
 (global-hl-line-mode)
 ;; easier navigating through windows
@@ -27,7 +28,7 @@
 ;; No tool bar
 (tool-bar-mode -1)
 ;; No menu bar
-;;(menu-bar-mode -1)
+(menu-bar-mode -1)
 ;; Show column number
 (column-number-mode t)
 ;; No backups
@@ -38,8 +39,6 @@
 (setq scroll-step 1)
 ;; Line numbers
 (global-linum-mode 1)
-;; Global electric mode
-(electric-pair-mode)
 ;; Clean white spaces on save
 (add-hook 'before-save-hook 'whitespace-cleanup)
 ;; Tabs for makefiles
@@ -48,7 +47,7 @@
 (setq windmove-wrap-around t)
 ;; Stop curso from jumping into minibuffer by itself
 (setq minibuffer-prompt-properties
-      (quote (read-only t point-entered minibuffer-avoid-prompt
+	  (quote (read-only t point-entered minibuffer-avoid-prompt
 			face minibuffer-prompt)))
 
 ;; Transparent emacs
@@ -62,8 +61,8 @@
    (if (/=
 	(cadr (frame-parameter nil 'alpha))
 	100)
-       (set-frame-parameter nil 'alpha '(100 100))
-     (set-frame-parameter nil 'alpha '(85 50))))
+	   (set-frame-parameter nil 'alpha '(100 100))
+	 (set-frame-parameter nil 'alpha '(85 50))))
  (global-set-key (kbd "C-c t") 'toggle-transparency)
 
  ;; Set transparency of emacs
@@ -75,7 +74,20 @@
 ;;; yasnippet
 ;;; should be loaded before auto complete so that they can work together
 (require 'yasnippet)
-(yas-global-mode 1)
+ (yas-global-mode 1)
+
+;;; auto complete mod
+;;; should be loaded after yasnippet so that they can work together
+(require 'auto-complete-config)
+(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
+(ac-config-default)
+;;; set the trigger key so that it can work together with yasnippet on tab key,
+;;; if the word exists in yasnippet, pressing tab will cause yasnippet to
+;;; activate, otherwise, auto-complete will
+(ac-set-trigger-key "TAB")
+(ac-set-trigger-key "<tab>")
+
+(require 'auto-complete-clang)
 
 (require 'tempo)
 (setq tempo-interactive t)
@@ -107,43 +119,43 @@
 3   "Define initial position."
    (if (eq element '~)
 	 (setq tempo-initial-pos (point-marker))
-     ad-do-it))
+	 ad-do-it))
  (defadvice tempo-insert-template( around tempo-insert-template-pos act )
    "Set initial position when defined. ChristophConrad"
    (setq tempo-initial-pos nil)
    ad-do-it
    (if tempo-initial-pos
-       (progn
+	   (progn
 	 (put template 'no-self-insert t)
 	 (goto-char tempo-initial-pos))
-    (put template 'no-self-insert nil)))
+	(put template 'no-self-insert nil)))
 
 ;;; Preprocessor Templates (appended to c-tempo-tags)
 (tempo-define-template "c-include"
-		       '("#include <" r ".h>" > n
+			   '("#include <" r ".h>" > n
 			 )
-		       "include"
-		       "Insert a #include <> statement"
-		       'c-tempo-tags)
+			   "include"
+			   "Insert a #include <> statement"
+			   'c-tempo-tags)
 
 (tempo-define-template "c-define"
-		       '("#define " r " " > n
+			   '("#define " r " " > n
 			 )
-		       "define"
-		       "Insert a #define statement"
-		       'c-tempo-tags)
+			   "define"
+			   "Insert a #define statement"
+			   'c-tempo-tags)
 
 (tempo-define-template "c-ifdef"
-		       '("#ifdef " (p "ifdef-condition: " clause) > n> p n
+			   '("#ifdef " (p "ifdef-condition: " clause) > n> p n
 			 "#else /* !(" (s clause) ") */" n> p n
 			 "#endif // " (s clause) n>
 			 )
-		       "ifdef"
-		       "Insert a #ifdef #else #endif statement"
-		       'c-tempo-tags)
+			   "ifdef"
+			   "Insert a #ifdef #else #endif statement"
+			   'c-tempo-tags)
 
 (tempo-define-template "c-ifndef"
-		       '("#ifndef " (p "ifndef-clause: " clause) > n
+			   '("#ifndef " (p "ifndef-clause: " clause) > n
 			 "#define " (s clause) n>
 
 			 "/** " > n>
@@ -159,12 +171,12 @@
 			 " " > n> p n
 			 "#endif // " (s clause) n>
 			 )
-		       "ifndef"
-		       "Insert a #ifndef #define #endif statement"
-		       'c-tempo-tags)
+			   "ifndef"
+			   "Insert a #ifndef #define #endif statement"
+			   'c-tempo-tags)
 
 (tempo-define-template "c-main"
-		       '(> "/** " > n>
+			   '(> "/** " > n>
 			   "* Filename: " > n>
 			   "* " n>
 			   "* Author: Benito Sanchez" > n>
@@ -184,28 +196,28 @@
 			 "return EXIT_SUCCESS;" > n
 			 "}" > n>
 			 )
-		       "main"
-		       "Insert a C main statement"
-		       'c-tempo-tags)
+			   "main"
+			   "Insert a C main statement"
+			   'c-tempo-tags)
 
 (tempo-define-template "c-switch"
-		       '(> "switch(" (p "variable to check: " clause) ") {" >  n>
+			   '(> "switch(" (p "variable to check: " clause) ") {" >  n>
 			 "case " > (p "first value: ") ": " ~ > n>
 			 " break;" > n>
 			 >"default:" > n>
 			 "}" > n>
 			 )
-		       "switch"
-		       "Insert a C switch statement"
-		       'c-tempo-tags)
+			   "switch"
+			   "Insert a C switch statement"
+			   'c-tempo-tags)
 
 (tempo-define-template "c-case"
-		       '("case " (p "value: ") ":" ~ > n>
+			   '("case " (p "value: ") ":" ~ > n>
 			   "break;" > n>
 			)
-		       "case"
-		       "Insert a C case statement"
-		       'c-tempo-tags)
+			   "case"
+			   "Insert a C case statement"
+			   'c-tempo-tags)
 
 ;;;C++-Mode Templates
 (setq max-lisp-eval-depth 500)
@@ -217,56 +229,54 @@
 
 
 
-			  "public:" > n>
+			  "    public:" > n>
 			  > n>
-			  "// ****************************************************************" n>
-			  (s class) "(); " n>
-			  "// ****************************************************************" n>
-			  "// SUMMARY: " n>
-			  "// " n>
-			  "// PRECONDITION: " n>
-			  "// " n>
-			  "// POSTCONDITION: " n>
-			  "// " n>
-			  "// ****************************************************************" n>
+			  "    // ****************************************************************" n>
+			  "    "(s class) "(); " n>
+			  "    // ****************************************************************" n>
+
 			  > n>
 
-			  "/* Accessors */" > n>
+			  "    /* Accessors */" > n>
 			  > n>
 
-			  "/* Mutators */" > n>
+			  "    /* Mutators */" > n>
 			  > n>
-			  "// ****************************************************************" n>
+			  "    // ****************************************************************" n>
 
 			  > n>
 			  > n>
 
-			  "private:" > n>
+			  "    private:" > n>
 
 
 			 "};\t// end of class " (s class) > n>
 			 )
-		       "class"
-		       "Insert a class skeleton"
-		       'c++-tempo-tags)
-
-
-(autoload 'markdown-mode "markdown-mode.el"
-   "Major mode for editing Markdown files" t)
-(add-to-list 'auto-mode-alist '("\\.text\\'" . markdown-mode))
-(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
-(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+			   "class"
+			   "Insert a class skeleton"
+			   'c++-tempo-tags)
 
 
 (provide 'tempo-c-cpp)
 ;;; tempo-c-cpp.el ends here
+
+(require 'cc-mode)
+(setq-default c-basic-offset 4 c-default-style "linux")
+(setq-default tab-width 4 indent-tabs-mode t)
+(define-key c-mode-base-map (kbd "RET") 'newline-and-indent)
+
+(require 'autopair)
+(autopair-global-mode 1)
+(setq autopair-autowrap t)
+
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(ansi-color-names-vector ["#2e3436" "#a40000" "#4e9a06" "#c4a000" "#204a87" "#5c3566" "#729fcf" "#eeeeec"])
- '(custom-enabled-themes (quote (wheatgrass)))
+ '(custom-enabled-themes (quote (manoj-dark)))
  '(custom-safe-themes (quote ("b3775ba758e7d31f3bb849e7c9e48ff60929a792961a2d536edec8f68c671ca5" "7bde52fdac7ac54d00f3d4c559f2f7aa899311655e7eb20ec5491f3b5c533fe8" "90d329edc17c6f4e43dbc67709067ccd6c0a3caa355f305de2041755986548f2" default)))
  '(linum-format " %7i "))
 (custom-set-faces
