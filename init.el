@@ -179,7 +179,7 @@
 			   '(> "/** " > n>
 			   "* Filename: " > n>
 			   "* " n>
-			   "* Author: Benito Sanchez" > n>
+			   "* Author: " > n>
 			   "* " > n>
 			   "* Description " > n>
 			   "* " > n>
